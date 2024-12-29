@@ -1,0 +1,123 @@
+# Running Application (Structure Project)
+- Dalam repository ini ada 2 project yaitu :
+1. Project test_backend (Soal 1 & 2)
+2. Project sso_server (Soal 2 & 3)
+
+# How to running :
+- cp .env.example .env (Copy file .env.example to .env)
+- test_backend using asgi. Untuk test_backend menggunakan threading sehingga dapat menjalankan grpc (port 50051) dan HTTP REST API (port 8001)
+-- python3 test_backend/asgi.py
+
+- sso_server menggunakan runserver biasa.
+-- python3 manage.py runserver (port 8000)
+
+# Structure Project GRPC
+test_backend/
+├── grpc_app/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── services.py       # File untuk implementasi gRPC
+│   ├── tests.py
+│   ├── views.py
+│   ├── proto/
+│   │   ├── user.proto    # File .proto untuk definisi gRPC
+│   │   └── __init__.py
+│   ├── generated/        # Folder hasil kompilasi file .proto
+│       ├── user_pb2.py
+│       └── user_pb2_grpc.py
+│   ├── utils/
+│       ├── jwt.py # File untuk implementasi pengecekan token blacklist saat sudah logout global 
+│       └── authentication.py # File untuk mengecek authentication SSO dan token blacklist
+├── test_backend/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+├── manage.py
+└── requirements.txt
+
+# Cara Anda menangani server untuk gRPC dan REST API secara bersamaan
+Menggunakan cara threading dan dijalankan secara asynchronus menggunakan asgi dengan menggunakan port yang berbeda
+- Untuk gRPC menggunakan port 50051
+- Untuk REST API menggunakan port 8001
+
+# Settings in Nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    # Proxy HTTP ke Django
+    location / {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Proxy gRPC ke server gRPC
+    location /grpc {
+        grpc_pass grpcs://127.0.0.1:50051;
+        error_page 502 = /error502grpc;
+    }
+}
+
+# Structure Project Single Sign-On (SSO)
+sso_server/
+├── auth_sso/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py         # Model User dan Blacklist
+│   ├── serializers.py    # Serializer Users
+│   ├── services.py       # File untuk implementasi gRPC
+│   ├── tests.py
+│   ├── views.py          # View API create_user, login, dan logout global
+│   ├── utils/
+│       ├── password_hash.py # File untuk hashing password custom pbkdf2passwordhasher
+├── sso_server/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+├── manage.py
+└── requirements.txt
+
+# Penjelasan singkat tentang arsitektur yang dipilih SSO
+Disclaimer :
+- Disini saya hanya menggunakan arsitektur sederhana, hanya mengambil username and password dari database sqllite,
+  dan membuat token JWT sebagai access_token dan refresh_token. Untuk project lebih besar saya menyarankan menggunakan ldap untuk mengatur
+  Access Directory atau Access Aplikasi. LDAP akan lebih mempermudah dalam mengatur Access User.
+- Dalam SSO ini saya menggunakan SECRET_KEY dari sso_server sebagai unified SECRET_KEY
+
+Penjelasan arsitektur :
+1. SSO server
+- Bertanggung jawab untuk authentication dan generate token JWT
+- API Login, Register dan Logout berada di SSO server, dibuat menjadi terpusat hanya mengatur system login dan register user.
+- Logout global digunakan untuk menghapus (memasukkan token kedalam Blacklist db) untuk memastikan token tidak dapat dipakai kembali.
+
+2. GRPC server (test_backend) (Ex: Client Application)
+- Di test_backend ada utils authentication.py yang berguna untuk mengecek setiap token yang mengakses API GRPC server
+  Sehingga tidak perlu melakukan back and forth ke SSO server dalam melakukan pengecekan token
+- Token akan di check apakah masuk di dalam Blacklist atau tidak, bila masuk blacklist token sudah tidak bisa digunakan kembali
+
+# CustomPBKDF2PasswordHasher
+- CustomPBKDF2PasswordHasher digunakan untuk hashing password dengan menggunakan algoritma PBKDF2 (Password-Based Key Derivation Function 2)
+- Disini saya menggunakan iterasi hanya 10 untuk kebutuhan demo dan menggunakan method hashing sha256 & untuk process hashing saya menambahkan SECRET_KEY
+- Dan saya menambahkan salt untuk membuat hashing lebih secure. 
+- Pada Class CustomPBKDF2PasswordHasher hanya ada 2 Function
+1. Encode : Untuk melakukan encryption password 
+2. Verify : Membandingkan password hashed dengan password hashed di database
+
+Untuk mengganti algoritma hashing tergantung dengan kebutuhan dan secara update security, disini saya tidak menyarankan menggunakan techonology md5 atau sha-1 karena era sekarang 2 techonology hashing tersebut sudah tidak aman.
+Minimal untuk hashing pada era sekarang sha256 dengan ditambah salt.
+
+Untuk melakukan test dapat menggunakan Postman Collection & Untuk test GRPC saya menyediakan source code python sederhana grpc-client
+
+

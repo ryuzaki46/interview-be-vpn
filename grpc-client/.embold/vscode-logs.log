@@ -1,0 +1,22 @@
+2024-12-25 17:36:28 info: Congratulations, your extension "Embold" is now active!
+2024-12-25 17:36:28 info: tempDirectory : /Users/davinjonathan/.vscode/extensions/embold-vscode.embold-0.1.8/temp
+2024-12-25 17:36:28 info: Extraction complete for source: /Users/davinjonathan/.vscode/extensions/embold-vscode.embold-0.1.8/resources/embold-scanner-archive.zip, destination: /Users/davinjonathan/.vscode/extensions/embold-vscode.embold-0.1.8/temp
+2024-12-25 17:36:28 info: Extension installed on machine OS : darwin
+2024-12-25 17:36:28 info: Fetched the issues from DB
+2024-12-25 17:36:28 error: ERROR checking java version : Error: Command failed: java -version
+The operation couldn’t be completed. Unable to locate a Java Runtime.
+Please visit http://www.java.com for information on installing Java.
+
+
+2024-12-25 17:36:28 info: Java version installed on machine : 
+The operation couldn’t be completed. Unable to locate a Java Runtime.
+Please visit http://www.java.com for information on installing Java.
+
+
+2024-12-25 17:36:28 info: Java installed on machine.
+2024-12-25 17:36:29 info: Embold extension version response:{"hasSupport":false,"version":"0.1.6","changeNotes":"<div> <p>Release Date: 09 Oct, 2023 <br><span>Bug fixes and improvements.</span></p> </div>"}
+2024-12-25 17:36:29 info: Current installed embold extension version : 0.1.8
+2024-12-25 17:36:29 info: Latest embold extension version on marketplace : 0.1.6
+2024-12-25 17:38:38 info: Row(s) deleted
+2024-12-25 17:38:38 info: Row(s) deleted
+2024-12-25 17:48:29 info: Row(s) deleted

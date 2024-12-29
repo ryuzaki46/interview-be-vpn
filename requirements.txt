@@ -1,0 +1,8 @@
+django
+djangorestframework
+PyJWT
+python-dotenv
+grpcio
+grpcio-tools
+uvicorn
+requests
